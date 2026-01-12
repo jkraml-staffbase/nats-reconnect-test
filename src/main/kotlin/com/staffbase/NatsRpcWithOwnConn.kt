@@ -39,16 +39,7 @@ class NatsRpcWithOwnConn(
             .connectionName(id)
             .build()
 
-        while (true) {
-            // handle starting this program before NATS server is available
-            try {
-                connection = Nats.connect(adaptedOpts)
-                break
-            } catch (e: Exception) {
-                println("$id Failed to connect to NATS server: ${e.message}. Retrying in 1s...")
-                Thread.sleep(1000)
-            }
-        }
+        connection = Nats.connectReconnectOnConnect(adaptedOpts)
         println("$id Connected to NATS server: ${connection?.connectedUrl}")
         dispatcher = connection?.createDispatcher(this@NatsRpcWithOwnConn::handleRpcCall)
         dispatcher?.subscribe(RPC_SUBJECT)

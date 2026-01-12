@@ -38,34 +38,34 @@ object Main {
             .errorListener(nkeylistener)
             .inboxPrefix("_INBOX_client")
             .build()
-        val nkeyConn = Nats.connect(nkeyConnOpts)
+        val nkeyConn = Nats.connectReconnectOnConnect(nkeyConnOpts)
 
         val plainListener = EverythingListener("plain-conn")
         val plainConnOpts = Options.Builder(connBldr.build()) // clone settings
             .connectionListener(plainListener)
             .errorListener(plainListener)
             .build()
-        val plainConn = Nats.connect(plainConnOpts)
+        val plainConn = Nats.connectReconnectOnConnect(plainConnOpts)
 
         val rpc1 = NatsRpcWithSharedConn("Rpc-1", nkeyConn,)
         val nkeyJs = nkeyConn.jetStream()
-        val sendLooper1 = JsSendLooperWithSharedConn("Send-Looper-1", nkeyJs)
-        val sender = JsSenderWithSharedConn("Sender", nkeyJs, listOf(
+//        val sendLooper1 = JsSendLooperWithSharedConn("Send-Looper-1", nkeyJs)
+        val sender = JsSenderWithSharedConn("Sender", plainConn.jetStream(), listOf(
             "foo" to "foo1",
             "bar" to "bar1",
             "foo" to "foo2",
         ))
 
-        rpc1.start()
-        sendLooper1.start()
+//        rpc1.start()
+//        sendLooper1.start()
         sender.start()
 
         // wait for ENTER key to exit
         println("Press ENTER to exit")
         readLine()
 
-        rpc1.stop()
-        sendLooper1.stop()
+//        rpc1.stop()
+//        sendLooper1.stop()
         sender.stop()
 
         println("NATS connection closed")
