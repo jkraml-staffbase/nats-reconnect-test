@@ -31,14 +31,14 @@ object Main {
             null,
             nkey.toCharArray()
         )
-        val nkeylistener = EverythingListener("nkey-conn")
-        val nkeyConnOpts = Options.Builder(connBldr.build()) // clone settings
-            .authHandler(nkeyHandler)
-            .connectionListener(nkeylistener)
-            .errorListener(nkeylistener)
-            .inboxPrefix("_INBOX_client")
-            .build()
-        val nkeyConn = Nats.connectReconnectOnConnect(nkeyConnOpts)
+//        val nkeylistener = EverythingListener("nkey-conn")
+//        val nkeyConnOpts = Options.Builder(connBldr.build()) // clone settings
+//            .authHandler(nkeyHandler)
+//            .connectionListener(nkeylistener)
+//            .errorListener(nkeylistener)
+//            .inboxPrefix("_INBOX_client")
+//            .build()
+//        val nkeyConn = Nats.connectReconnectOnConnect(nkeyConnOpts)
 
         val plainListener = EverythingListener("plain-conn")
         val plainConnOpts = Options.Builder(connBldr.build()) // clone settings
@@ -47,26 +47,29 @@ object Main {
             .build()
         val plainConn = Nats.connectReconnectOnConnect(plainConnOpts)
 
-        val rpc1 = NatsRpcWithSharedConn("Rpc-1", nkeyConn,)
-        val nkeyJs = nkeyConn.jetStream()
+        val plainSender = NatsSendLooperWithSharedConn("Sender", plainConn)
+//        val rpc1 = NatsRpcWithSharedConn("Rpc-1", nkeyConn,)
+//        val nkeyJs = nkeyConn.jetStream()
 //        val sendLooper1 = JsSendLooperWithSharedConn("Send-Looper-1", nkeyJs)
-        val sender = JsSenderWithSharedConn("Sender", plainConn.jetStream(), listOf(
-            "foo" to "foo1",
-            "bar" to "bar1",
-            "foo" to "foo2",
-        ))
+//        val sender = JsSenderWithSharedConn("Sender", plainConn.jetStream(), listOf(
+//            "foo" to "foo1",
+//            "bar" to "bar1",
+//            "foo" to "foo2",
+//        ))
 
+        plainSender.start()
 //        rpc1.start()
 //        sendLooper1.start()
-        sender.start()
+//        sender.start()
 
         // wait for ENTER key to exit
         println("Press ENTER to exit")
         readLine()
 
+        plainSender.stop()
 //        rpc1.stop()
 //        sendLooper1.stop()
-        sender.stop()
+//        sender.stop()
 
         println("NATS connection closed")
     }
